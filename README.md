@@ -10,3 +10,4 @@ This is a plugin for better discord that adds the option to search on klipy.com 
 5. Open discord, enable plugin and manage plugin settings to add your api
 6. Search on favorite bar
 
+[Vencord Server instructions](https://discord.com/channels/1015060230222131221/1257038407503446176)
