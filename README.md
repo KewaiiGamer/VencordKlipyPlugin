@@ -1,4 +1,4 @@
-This is a plugin for better discord that adds the option to search on klipy.com instead of giphy/tenor. It currently adds a search field in favorites category which can be used to search Klipy.com
+This is a plugin for vencord that adds the option to search on klipy.com instead of giphy/tenor. It currently adds a search field in favorites category which can be used to search Klipy.com
 
 # How to install:
 
