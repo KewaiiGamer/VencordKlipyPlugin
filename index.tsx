@@ -6,6 +6,7 @@
 
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
+import { Devs } from "@utils/constants";
 import definePlugin, { OptionType, PluginNative } from "@utils/types";
 import { useCallback, useEffect, useRef, useState } from "@webpack/common";
 
@@ -178,10 +179,7 @@ function SearchBar({ instance, SearchBarComponent }: { instance: Instance; Searc
 export default definePlugin({
     name: "ReplaceGifsKlipy",
     description: "Replaces the gif Search with Klipy.com",
-    authors: [{
-        name: "Kewaii",
-        id: 797102656099319808n
-    }],
+    authors: [Devs.Kewaii],
     patches: [
         {
             find: "renderHeaderContent()",
