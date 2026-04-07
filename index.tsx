@@ -170,7 +170,7 @@ function SearchBar({ instance, SearchBarComponent }: { instance: Instance; Searc
                 }
             }}
             query={query}
-            placeholder="Search Klipy.com"
+            placeholder="Search KLIPY"
         />
     );
 }
