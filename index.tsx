@@ -1,8 +1,13 @@
+/*
+ * Vencord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
-import definePlugin, { OptionType } from "@utils/types";
+import definePlugin, { OptionType, PluginNative } from "@utils/types";
 import { useCallback, useEffect, useRef, useState } from "@webpack/common";
-import { PluginNative } from "@utils/types";
 
 const Native = VencordNative.pluginHelpers.ReplaceGifsKlipy as PluginNative<typeof import("./native")>;
 
@@ -41,7 +46,7 @@ interface Instance {
     },
     forceUpdate: () => void;
 }
-let page = 0;
+const page = 0;
 
 export const settings = definePluginSettings({
     localeName: {
@@ -57,7 +62,7 @@ export const settings = definePluginSettings({
     apiKey: {
         description: "Klipy API Key",
         type: OptionType.STRING,
-        placeholder: 'api_key'
+        placeholder: "api_key"
     },
     filterLevel: {
         description: "Filtering level",
@@ -65,8 +70,8 @@ export const settings = definePluginSettings({
         options: [
             { label: "Off", value: "off", default: true },
             { label: "Low", value: "low" },
-            { label: "Medium", value: 'medium'},
-            { label: "High", value: "high"}
+            { label: "Medium", value: "medium" },
+            { label: "High", value: "high" }
         ]
     },
     customerId: {
@@ -78,8 +83,7 @@ export const settings = definePluginSettings({
 
 async function searchKlipy(searchQuery: string) {
 
-    const gifSearchUrl = `https://api.klipy.com/api/v1/${settings.store.apiKey}/gifs/search?page=${page}&per_page=${settings.store.gifsPerPage}&q=${searchQuery}&customer_id=${settings.store.customerId}&locale=${settings.store.localeName}&content_filter=${settings.store.filterLevel}`
-    
+    const gifSearchUrl = `https://api.klipy.com/api/v1/${settings.store.apiKey}/gifs/search?page=${page}&per_page=${settings.store.gifsPerPage}&q=${searchQuery}&customer_id=${settings.store.customerId}&locale=${settings.store.localeName}&content_filter=${settings.store.filterLevel}`;
     // CORS jumpscare
     const { status, json } = await Native.makeKlipySearchRequest(
         gifSearchUrl,
@@ -97,8 +101,8 @@ async function searchKlipy(searchQuery: string) {
 
 
     let order = 0;
-    let score = settings.store.gifsPerPage ?? 20
-    const gifs: {score: number, gif: Gif}[] = json.data.data.map((el: any) => {
+    let score = settings.store.gifsPerPage ?? 20;
+    const gifs: { score: number, gif: Gif }[] = json.data.data.map((el: any) => {
         const gif: Gif = {
             format: 0,
             src: el.file.hd.gif.url,
@@ -106,14 +110,14 @@ async function searchKlipy(searchQuery: string) {
             height: el.file.hd.gif.height,
             order,
             url: el.file.hd.gif.url,
-        }
+        };
         order += 1;
         score -= 1;
-        return {score, gif};
-    })
+        return { score, gif };
+    });
 
     gifs.sort((a, b) => b.score - a.score);
-    return gifs.map(e => e.gif)
+    return gifs.map(e => e.gif);
 }
 
 function SearchBar({ instance, SearchBarComponent }: { instance: Instance; SearchBarComponent: TSearchBarComponent; }) {
@@ -137,10 +141,8 @@ function SearchBar({ instance, SearchBarComponent }: { instance: Instance; Searc
             ?.closest("#gif-picker-tab-panel")
             ?.querySelector('[class*="scrollerBase"]')
             ?.scrollTo(0, 0);
-
-        
-        const gifs = await searchKlipy(searchQuery)
-        props.favorites = gifs
+        const gifs = await searchKlipy(searchQuery);
+        props.favorites = gifs;
         instance.forceUpdate();
 
 
