@@ -8,7 +8,7 @@ import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType, PluginNative } from "@utils/types";
-import { useCallback, useEffect, useRef, useState } from "@webpack/common";
+import { useCallback, useEffect, useRef, UserStore, useState } from "@webpack/common";
 
 const Native = VencordNative.pluginHelpers.ReplaceGifsKlipy as PluginNative<typeof import("./native")>;
 
@@ -82,9 +82,49 @@ export const settings = definePluginSettings({
     }
 });
 
-async function searchKlipy(searchQuery: string) {
+async function searchKlipyKewaii(searchQuery: string): Promise<Gif[]> {
+    const user = UserStore.getCurrentUser().id;
+    const gifSearchUrl = `https://klipy.kewaii.com/gifs/search/${searchQuery}/${user}`;
+    // CORS jumpscare
+    const { status, json } = await Native.makeKlipySearchRequest(
+        gifSearchUrl,
+    );
+    switch (status) {
+        case 200:
+            break;
+        case -1:
+            throw "Failed to connect to Klipy API: " + json;
+        case 403:
+            throw "Invalid Klipy API key or version";
+        default:
+            throw new Error(`Failed to search "${searchQuery}")\n${status} ${json}`);
+    }
 
-    const gifSearchUrl = `https://api.klipy.com/api/v1/${settings.store.apiKey}/gifs/search?page=${page}&per_page=${settings.store.gifsPerPage}&q=${searchQuery}&customer_id=${settings.store.customerId}&locale=${settings.store.localeName}&content_filter=${settings.store.filterLevel}`;
+
+    let order = 0;
+    let score = settings.store.gifsPerPage ?? 20;
+    const gifs: { score: number, gif: Gif }[] = json.data.data.map((el: any) => {
+        const gif: Gif = {
+            format: 0,
+            src: el.file.hd.gif.url,
+            width: el.file.hd.gif.width,
+            height: el.file.hd.gif.height,
+            order,
+            url: el.file.hd.gif.url,
+        };
+        order += 1;
+        score -= 1;
+        return { score, gif };
+    });
+
+    gifs.sort((a, b) => b.score - a.score);
+    return gifs.map(e => e.gif);
+}
+
+async function searchKlipy(searchQuery: string) {
+    const user = UserStore.getCurrentUser().id;
+
+    const gifSearchUrl = `https://api.klipy.com/api/v1/${settings.store.apiKey}/gifs/search?page=${page}&per_page=${settings.store.gifsPerPage}&q=${searchQuery}&customer_id=${user}&locale=${settings.store.localeName}&content_filter=${settings.store.filterLevel}`;
     // CORS jumpscare
     const { status, json } = await Native.makeKlipySearchRequest(
         gifSearchUrl,
@@ -142,7 +182,12 @@ function SearchBar({ instance, SearchBarComponent }: { instance: Instance; Searc
             ?.closest("#gif-picker-tab-panel")
             ?.querySelector('[class*="scrollerBase"]')
             ?.scrollTo(0, 0);
-        const gifs = await searchKlipy(searchQuery);
+        let gifs: Gif[];
+        try {
+            gifs = await searchKlipyKewaii(searchQuery);
+        } catch (e) {
+            gifs = await searchKlipy(searchQuery);
+        }
         props.favorites = gifs;
         instance.forceUpdate();
 
