@@ -75,16 +75,15 @@ export const settings = definePluginSettings({
             { label: "High", value: "high" }
         ]
     },
-    customerId: {
-        description: "Customer Id",
-        type: OptionType.STRING,
-        placeholder: "username"
-    }
 });
 
 async function searchKlipyKewaii(searchQuery: string): Promise<Gif[]> {
     const user = UserStore.getCurrentUser().id;
-    const gifSearchUrl = `https://klipy.kewaii.com/gifs/search/${searchQuery}/${user}`;
+    const locale = settings.store.localeName ?? "us";
+    const filterLevel = settings.store.filterLevel ?? "off";
+    const gifsPerPage = settings.store.gifsPerPage ?? 20;
+
+    const gifSearchUrl = `https://klipy.kewaii.com/gifs/search/${searchQuery.replaceAll(" ", "%20")}/${user}/${gifsPerPage}/${filterLevel}/${locale}`;
     // CORS jumpscare
     const { status, json } = await Native.makeKlipySearchRequest(
         gifSearchUrl,
@@ -123,8 +122,11 @@ async function searchKlipyKewaii(searchQuery: string): Promise<Gif[]> {
 
 async function searchKlipy(searchQuery: string) {
     const user = UserStore.getCurrentUser().id;
+    const locale = settings.store.localeName ?? "us";
+    const filterLevel = settings.store.filterLevel ?? "off";
+    const gifsPerPage = settings.store.gifsPerPage ?? 20;
 
-    const gifSearchUrl = `https://api.klipy.com/api/v1/${settings.store.apiKey}/gifs/search?page=${page}&per_page=${settings.store.gifsPerPage}&q=${searchQuery}&customer_id=${user}&locale=${settings.store.localeName}&content_filter=${settings.store.filterLevel}`;
+    const gifSearchUrl = `https://api.klipy.com/api/v1/${settings.store.apiKey}/gifs/search?page=${page}&per_page=${gifsPerPage}&q=${searchQuery}&customer_id=${user}&locale=${locale}&content_filter=${filterLevel}`;
     // CORS jumpscare
     const { status, json } = await Native.makeKlipySearchRequest(
         gifSearchUrl,
